@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Bot — Data Structures</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #0f1525;
+    --bg3: #151c30;
+    --panel: #1a2238;
+    --panel2: #1f2a42;
+    --border: #2a3a5c;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --accent4: #f59e0b;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --glow: 0 0 20px rgba(0,212,255,0.15);
+    --glow2: 0 0 30px rgba(124,58,237,0.2);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;overflow:hidden;}
+  body{
+    font-family:'DM Sans',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+  }
+
+  /* ===== TOP NAV ===== */
+  #topnav{
+    display:flex;align-items:center;gap:16px;
+    padding:12px 20px;
+    background:var(--bg2);
+    border-bottom:1px solid var(--border);
+    z-index:100;flex-shrink:0;
+  }
+  .logo{
+    font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;
+    color:var(--accent);letter-spacing:-0.5px;white-space:nowrap;
+    display:flex;align-items:center;gap:8px;
+  }
+  .logo-icon{
+    width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+    border-radius:8px;display:flex;align-items:center;justify-content:center;
+    font-size:16px;flex-shrink:0;
+  }
+  .nav-tabs{display:flex;gap:4px;flex:1;overflow-x:auto;}
+  .nav-tab{
+    padding:6px 14px;border-radius:6px;cursor:pointer;
+    font-family:'Syne',sans-serif;font-weight:600;font-size:0.78rem;
+    color:var(--text2);background:transparent;border:none;
+    transition:all .2s;white-space:nowrap;letter-spacing:0.3px;
+  }
+  .nav-tab:hover{color:var(--text);background:var(--panel);}
+  .nav-tab.active{color:var(--accent);background:var(--panel);box-shadow:inset 0 -2px 0 var(--accent);}
+  .progress-badge{
+    margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0;
+  }
+  .xp-bar-wrap{width:100px;height:8px;background:var(--panel);border-radius:4px;overflow:hidden;}
+  .xp-bar{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:4px;transition:width .5s;}
+  .xp-label{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--text2);}
+  .chapter-badge{
+    padding:4px 10px;border-radius:20px;font-family:'Space Mono',monospace;font-size:0.68rem;
+    background:var(--panel);color:var(--accent);border:1px solid var(--border);
+  }
+
+  /* ===== MAIN LAYOUT ===== */
+  #main{display:flex;flex:1;overflow:hidden;}
+
+  /* ===== SIDEBAR ===== */
+  #sidebar{
+    width:240px;flex-shrink:0;
+    background:var(--bg2);border-right:1px solid var(--border);
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  .sidebar-header{
+    padding:16px;border-bottom:1px solid var(--border);
+    font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;
+    color:var(--text3);letter-spacing:1px;text-transform:uppercase;
+  }
+  .chapter-list{flex:1;overflow-y:auto;padding:8px;}
+  .chapter-item{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 12px;border-radius:8px;cursor:pointer;
+    margin-bottom:2px;transition:all .2s;position:relative;
+  }
+  .chapter-item:hover{background:var(--panel);}
+  .chapter-item.active{background:var(--panel);border-left:3px solid var(--accent);}
+  .chapter-item.locked{opacity:0.4;cursor:not-allowed;}
+  .chapter-item.completed{border-left:3px solid var(--accent3);}
+  .ch-icon{
+    width:28px;height:28px;border-radius:6px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:14px;flex-shrink:0;
+  }
+  .ch-icon.locked-icon{background:var(--panel2);color:var(--text3);}
+  .ch-icon.active-icon{background:rgba(0,212,255,0.15);color:var(--accent);}
+  .ch-icon.done-icon{background:rgba(16,185,129,0.15);color:var(--accent3);}
+  .ch-info{flex:1;min-width:0;}
+  .ch-name{font-family:'Syne',sans-serif;font-weight:600;font-size:0.78rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ch-sub{font-size:0.68rem;color:var(--text3);}
+  .ch-score{
+    font-family:'Space Mono',monospace;font-size:0.65rem;
+    padding:2px 6px;border-radius:4px;
+  }
+  .ch-score.pass{background:rgba(16,185,129,0.15);color:var(--accent3);}
+  .ch-score.fail{background:rgba(239,68,68,0.15);color:var(--danger);}
+  .sidebar-footer{padding:12px;border-top:1px solid var(--border);}
+  .overall-progress{margin-bottom:8px;}
+  .prog-label{display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text3);margin-bottom:4px;}
+  .prog-bar-wrap{height:6px;background:var(--panel);border-radius:3px;overflow:hidden;}
+  .prog-bar{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent3));border-radius:3px;transition:width .5s;}
+  .reset-btn{
+    width:100%;padding:7px;border-radius:6px;border:1px solid var(--border);
+    background:transparent;color:var(--text3);font-family:'Syne',sans-serif;
+    font-size:0.72rem;cursor:pointer;transition:all .2s;font-weight:600;
+  }
+  .reset-btn:hover{background:rgba(239,68,68,0.1);color:var(--danger);border-color:var(--danger);}
+
+  /* ===== CONTENT AREA ===== */
+  #content{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+  /* ===== VIEWS ===== */
+  .view{display:none;flex:1;flex-direction:column;overflow:hidden;}
+  .view.active{display:flex;}
+
+  /* ===== CHAT VIEW ===== */
+  #chatView{display:flex;flex-direction:column;}
+  #chatMessages{
+    flex:1;overflow-y:auto;padding:20px;
+    display:flex;flex-direction:column;gap:16px;
+  }
+  .msg{display:flex;gap:12px;max-width:800px;animation:msgIn .3s ease;}
+  @keyframes msgIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+  .msg.user{align-self:flex-end;flex-direction:row-reverse;}
+  .msg-avatar{
+    width:34px;height:34px;border-radius:8px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:16px;
+  }
+  .bot-avatar{background:linear-gradient(135deg,var(--accent2),var(--accent));}
+  .user-avatar{background:linear-gradient(135deg,var(--accent3),#0891b2);}
+  .msg-content{
+    padding:12px 16px;border-radius:12px;max-width:680px;line-height:1.65;font-size:0.9rem;
+  }
+  .msg.bot .msg-content{
+    background:var(--panel);border:1px solid var(--border);border-top-left-radius:2px;
+  }
+  .msg.user .msg-content{
+    background:linear-gradient(135deg,rgba(124,58,237,0.3),rgba(0,212,255,0.2));
+    border:1px solid rgba(0,212,255,0.2);border-top-right-radius:2px;
+  }
+  .msg-content h3{font-family:'Syne',sans-serif;color:var(--accent);margin-bottom:6px;font-size:0.95rem;}
+  .msg-content h4{font-family:'Syne',sans-serif;color:var(--accent4);margin:10px 0 4px;font-size:0.85rem;}
+  .msg-content ul,.msg-content ol{padding-left:18px;margin:6px 0;}
+  .msg-content li{margin-bottom:4px;}
+  .msg-content code{
+    font-family:'Space Mono',monospace;font-size:0.78rem;
+    background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:4px;color:var(--accent4);
+  }
+  .msg-content pre{
+    font-family:'Space Mono',monospace;font-size:0.75rem;
+    background:rgba(0,0,0,0.5);padding:12px;border-radius:8px;
+    border:1px solid var(--border);overflow-x:auto;margin:8px 0;color:var(--accent4);
+    line-height:1.5;
+  }
+  .msg-content strong{color:var(--accent);}
+  .msg-content em{color:var(--text2);}
+  .msg-content p{margin-bottom:6px;}
+  .msg-content .highlight{
+    display:inline-block;padding:2px 8px;border-radius:4px;
+    background:rgba(0,212,255,0.1);color:var(--accent);font-family:'Space Mono',monospace;font-size:0.8rem;
+  }
+  .typing-indicator{display:flex;gap:5px;align-items:center;padding:4px 0;}
+  .typing-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);opacity:0.5;animation:blink 1.2s infinite;}
+  .typing-dot:nth-child(2){animation-delay:0.2s;}
+  .typing-dot:nth-child(3){animation-delay:0.4s;}
+  @keyframes blink{0%,80%,100%{opacity:0.2;}40%{opacity:1;}}
+
+  /* quick action chips */
+  .quick-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .chip{
+    padding:6px 14px;border-radius:20px;border:1px solid var(--border);
+    background:var(--panel2);color:var(--accent);cursor:pointer;
+    font-size:0.78rem;font-family:'Syne',sans-serif;font-weight:600;
+    transition:all .2s;
+  }
+  .chip:hover{background:rgba(0,212,255,0.1);border-color:var(--accent);}
+
+  /* chat input */
+  #chatInputArea{
+    padding:16px 20px;border-top:1px solid var(--border);
+    background:var(--bg2);display:flex;gap:10px;align-items:flex-end;
+  }
+  #chatInput{
+    flex:1;background:var(--panel);border:1px solid var(--border);
+    border-radius:10px;padding:10px 14px;color:var(--text);
+    font-family:'DM Sans',sans-serif;font-size:0.9rem;resize:none;
+    max-height:120px;outline:none;transition:border-color .2s;line-height:1.5;
+  }
+  #chatInput:focus{border-color:var(--accent);}
+  #chatInput::placeholder{color:var(--text3);}
+  #sendBtn{
+    width:40px;height:40px;border-radius:10px;border:none;cursor:pointer;
+    background:linear-gradient(135deg,var(--accent2),var(--accent));
+    color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;
+    transition:all .2s;flex-shrink:0;
+  }
+  #sendBtn:hover{transform:scale(1.05);box-shadow:var(--glow);}
+  #sendBtn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+  /* ===== LEARN VIEW ===== */
+  #learnView{overflow-y:auto;padding:24px;}
+  .learn-header{margin-bottom:24px;}
+  .learn-title{
+    font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem;
+    color:var(--text);margin-bottom:6px;
+  }
+  .learn-subtitle{color:var(--text2);font-size:0.9rem;}
+  .learn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+  .concept-card{
+    background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:20px;cursor:pointer;transition:all .25s;
+    position:relative;overflow:hidden;
+  }
+  .concept-card::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,var(--accent2),var(--accent));
+    transform:scaleX(0);transition:transform .25s;transform-origin:left;
+  }
+  .concept-card:hover::before{transform:scaleX(1);}
+  .concept-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--glow);}
+  .card-icon{font-size:28px;margin-bottom:12px;}
+  .card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--text);margin-bottom:6px;}
+  .card-desc{font-size:0.82rem;color:var(--text2);line-height:1.5;}
+  .card-tag{
+    display:inline-block;margin-top:12px;padding:3px 10px;border-radius:12px;
+    font-family:'Space Mono',monospace;font-size:0.65rem;
+    background:rgba(0,212,255,0.1);color:var(--accent);
+  }
+
+  /* ===== QUIZ VIEW ===== */
+  #quizView{overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:20px;}
+  .quiz-header{display:flex;align-items:center;justify-content:space-between;}
+  .quiz-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;}
+  .quiz-meta{font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--text2);}
+  .quiz-progress-bar{height:6px;background:var(--panel);border-radius:3px;overflow:hidden;}
+  .quiz-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .4s;}
+  .question-card{
+    background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:24px;
+  }
+  .question-num{font-family:'Space Mono',monospace;font-size:0.72rem;color:var(--accent2);margin-bottom:8px;}
+  .question-text{font-family:'Syne',sans-serif;font-weight:600;font-size:1.05rem;color:var(--text);line-height:1.5;margin-bottom:18px;}
+  .options{display:flex;flex-direction:column;gap:10px;}
+  .option{
+    padding:12px 16px;border-radius:10px;border:1px solid var(--border);
+    background:var(--panel2);cursor:pointer;transition:all .2s;
+    font-size:0.88rem;display:flex;align-items:center;gap:10px;
+  }
+  .option:hover:not(.disabled){border-color:var(--accent);background:rgba(0,212,255,0.05);}
+  .option.selected{border-color:var(--accent);background:rgba(0,212,255,0.1);color:var(--accent);}
+  .option.correct{border-color:var(--accent3);background:rgba(16,185,129,0.1);color:var(--accent3);}
+  .option.wrong{border-color:var(--danger);background:rgba(239,68,68,0.1);color:var(--danger);}
+  .option.disabled{cursor:not-allowed;}
+  .option-letter{
+    width:24px;height:24px;border-radius:6px;border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Mono',monospace;font-size:0.72rem;flex-shrink:0;
+  }
+  .feedback-box{
+    margin-top:14px;padding:14px;border-radius:10px;font-size:0.85rem;line-height:1.6;
+    border:1px solid;
+  }
+  .feedback-box.correct{border-color:var(--accent3);background:rgba(16,185,129,0.08);color:var(--accent3);}
+  .feedback-box.wrong{border-color:var(--danger);background:rgba(239,68,68,0.08);color:var(--text);}
+  .quiz-nav{display:flex;gap:12px;justify-content:flex-end;}
+  .btn{
+    padding:10px 22px;border-radius:8px;border:none;cursor:pointer;
+    font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;
+    transition:all .2s;
+  }
+  .btn-primary{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:var(--glow);}
+  .btn-secondary{background:var(--panel);color:var(--text2);border:1px solid var(--border);}
+  .btn-secondary:hover{color:var(--text);border-color:var(--text2);}
+  .btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+
+  /* quiz results */
+  .results-card{
+    background:var(--panel);border:1px solid var(--border);border-radius:14px;
+    padding:32px;text-align:center;
+  }
+  .results-score{
+    font-family:'Syne',sans-serif;font-weight:800;font-size:3.5rem;
+    margin-bottom:4px;
+  }
+  .results-score.pass{color:var(--accent3);}
+  .results-score.fail{color:var(--danger);}
+  .results-label{color:var(--text2);font-size:0.9rem;margin-bottom:20px;}
+  .results-msg{
+    padding:14px 20px;border-radius:10px;font-size:0.88rem;line-height:1.6;
+    margin-bottom:20px;
+  }
+  .results-msg.pass{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--text);}
+  .results-msg.fail{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:var(--text);}
+  .results-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+
+  /* ===== SCHEDULE VIEW ===== */
+  #scheduleView{overflow-y:auto;padding:24px;}
+  .schedule-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:20px;}
+  .day-col{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 8px;min-height:120px;}
+  .day-label{font-family:'Syne',sans-serif;font-weight:700;font-size:0.72rem;color:var(--text3);text-align:center;margin-bottom:8px;}
+  .day-task{
+    padding:5px 8px;border-radius:6px;font-size:0.68rem;margin-bottom:4px;cursor:pointer;
+    border:1px solid;transition:all .15s;
+  }
+  .task-study{background:rgba(0,212,255,0.08);border-color:rgba(0,212,255,0.2);color:var(--accent);}
+  .task-quiz{background:rgba(124,58,237,0.08);border-color:rgba(124,58,237,0.2);color:var(--accent2);}
+  .task-review{background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.2);color:var(--accent3);}
+  .task-done{opacity:0.4;text-decoration:line-through;}
+  .schedule-legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:0.78rem;color:var(--text2);}
+  .legend-dot{width:10px;height:10px;border-radius:3px;}
+  .study-tips{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+  .tip-card{
+    background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;
+  }
+  .tip-icon{font-size:20px;margin-bottom:8px;}
+  .tip-title{font-family:'Syne',sans-serif;font-weight:700;font-size:0.82rem;color:var(--text);margin-bottom:4px;}
+  .tip-text{font-size:0.78rem;color:var(--text2);line-height:1.5;}
+
+  /* ===== SCROLLBARS ===== */
+  ::-webkit-scrollbar{width:5px;height:5px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+  ::-webkit-scrollbar-thumb:hover{background:var(--text3);}
+
+  /* ===== MODAL ===== */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;
+    display:none;align-items:center;justify-content:center;
+    backdrop-filter:blur(4px);
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+    width:90%;max-width:640px;max-height:85vh;overflow-y:auto;padding:28px;
+    animation:modalIn .25s ease;
+  }
+  @keyframes modalIn{from{opacity:0;transform:scale(0.95);}to{opacity:1;transform:scale(1);}}
+  .modal-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;margin-bottom:16px;}
+  .modal-close{
+    float:right;background:none;border:none;color:var(--text2);font-size:20px;
+    cursor:pointer;margin-top:-4px;
+  }
+  .modal-close:hover{color:var(--text);}
+  .lesson-content{font-size:0.88rem;line-height:1.7;color:var(--text2);}
+  .lesson-content h3{font-family:'Syne',sans-serif;color:var(--accent);font-size:1rem;margin:16px 0 6px;}
+  .lesson-content h4{font-family:'Syne',sans-serif;color:var(--accent4);font-size:0.9rem;margin:12px 0 4px;}
+  .lesson-content ul{padding-left:18px;margin:6px 0;}
+  .lesson-content li{margin-bottom:5px;}
+  .lesson-content pre{
+    background:rgba(0,0,0,0.5);padding:14px;border-radius:8px;
+    border:1px solid var(--border);overflow-x:auto;
+    font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--accent4);
+    line-height:1.5;margin:10px 0;
+  }
+  .lesson-content code{
+    font-family:'Space Mono',monospace;font-size:0.78rem;
+    background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:4px;color:var(--accent4);
+  }
+  .lesson-content strong{color:var(--text);}
+  .modal-footer{margin-top:20px;display:flex;gap:10px;justify-content:flex-end;}
+
+  /* ===== NOTIFICATION TOAST ===== */
+  #toast{
+    position:fixed;bottom:24px;right:24px;z-index:300;
+    padding:12px 20px;border-radius:10px;border:1px solid;
+    font-family:'Syne',sans-serif;font-weight:600;font-size:0.85rem;
+    transform:translateY(60px);opacity:0;transition:all .3s;
+  }
+  #toast.show{transform:translateY(0);opacity:1;}
+  #toast.success{background:rgba(16,185,129,0.15);border-color:var(--accent3);color:var(--accent3);}
+  #toast.error{background:rgba(239,68,68,0.12);border-color:var(--danger);color:var(--danger);}
+  #toast.info{background:rgba(0,212,255,0.1);border-color:var(--accent);color:var(--accent);}
+
+  /* ===== RESPONSIVE ===== */
+  @media(max-width:700px){
+    #sidebar{display:none;}
+    .schedule-grid{grid-template-columns:repeat(3,1fr);}
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav id="topnav">
+  <div class="logo">
+    <div class="logo-icon">🎓</div>
+    Study Bot
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchView('chat')">💬 AI Tutor</button>
+    <button class="nav-tab" onclick="switchView('learn')">📚 Learn</button>
+    <button class="nav-tab" onclick="switchView('quiz')">🧠 Quiz</button>
+    <button class="nav-tab" onclick="switchView('schedule')">📅 Schedule</button>
+  </div>
+  <div class="progress-badge">
+    <span class="xp-label" id="xpLabel">0 XP</span>
+    <div class="xp-bar-wrap"><div class="xp-bar" id="xpBar" style="width:0%"></div></div>
+    <div class="chapter-badge" id="chapterBadge">Ch. 1</div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sidebar-header">Chapters</div>
+    <div class="chapter-list" id="chapterList"></div>
+    <div class="sidebar-footer">
+      <div class="overall-progress">
+        <div class="prog-label"><span>Overall Progress</span><span id="overallPct">0%</span></div>
+        <div class="prog-bar-wrap"><div class="prog-bar" id="overallBar" style="width:0%"></div></div>
+      </div>
+      <button class="reset-btn" onclick="confirmReset()">↺ Reset Progress</button>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <div id="content">
+
+    <!-- CHAT VIEW -->
+    <div id="chatView" class="view active">
+      <div id="chatMessages"></div>
+      <div id="chatInputArea">
+        <textarea id="chatInput" rows="1" placeholder="Ask Study Bot anything about Data Structures…" onkeydown="handleKey(event)" oninput="autoGrow(this)"></textarea>
+        <button id="sendBtn" onclick="sendMessage()">➤</button>
+      </div>
+    </div>
+
+    <!-- LEARN VIEW -->
+    <div id="learnView" class="view">
+      <div class="learn-header">
+        <div class="learn-title">Data Structures Curriculum</div>
+        <div class="learn-subtitle">Click any concept card to open the full lesson. Complete chapters in order to unlock the next.</div>
+      </div>
+      <div class="learn-grid" id="learnGrid"></div>
+    </div>
+
+    <!-- QUIZ VIEW -->
+    <div id="quizView" class="view">
+      <div class="quiz-header">
+        <div class="quiz-title" id="quizTitle">Chapter Quiz</div>
+        <div class="quiz-meta" id="quizMeta"></div>
+      </div>
+      <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quizProgressFill" style="width:0%"></div></div>
+      <div id="quizContent"></div>
+    </div>
+
+    <!-- SCHEDULE VIEW -->
+    <div id="scheduleView" class="view">
+      <div class="learn-header">
+        <div class="learn-title">📅 Study Schedule</div>
+        <div class="learn-subtitle">Your personalised 4-week Data Structures study plan. Check off tasks as you go.</div>
+      </div>
+      <div class="schedule-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Study Lesson</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent2)"></div>Quiz</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent3)"></div>Review</div>
+      </div>
+      <div id="scheduleContainer"></div>
+      <br>
+      <div class="learn-title" style="font-size:1.1rem;margin-bottom:14px;">⚡ Study Tips</div>
+      <div class="study-tips" id="studyTips"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- LESSON MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="lesson-content" id="modalContent"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModalDirect()">Close</button>
+      <button class="btn btn-primary" id="modalQuizBtn" onclick="startChapterQuiz()">Take Chapter Quiz →</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const CHAPTERS = [
+  {
+    id:0, title:"Introduction to Data Structures", icon:"🌐",
+    tag:"Foundation",
+    desc:"What are data structures? Why they matter in C++ programming.",
+    lesson:`
+<h3>What Is a Data Structure?</h3>
+<p>A <strong>data structure</strong> is a way of organizing and storing data in a computer so that it can be accessed and modified efficiently. Think of it like different ways to organize books:</p>
+<ul>
+  <li>Stack them in a pile (Stack)</li>
+  <li>Line them in a shelf (Array / Linked List)</li>
+  <li>Organize by topic in a tree structure (Tree)</li>
+</ul>
+
+<h3>Why Data Structures Matter</h3>
+<p>You already know C++ basics — variables, loops, functions, classes. Data structures are the next level: they determine <em>how efficiently</em> your program runs.</p>
+<ul>
+  <li><strong>Speed:</strong> The right data structure can make an operation 1,000x faster.</li>
+  <li><strong>Memory:</strong> Efficient structures use less RAM.</li>
+  <li><strong>Clarity:</strong> Well-chosen structures make code easier to understand.</li>
+</ul>
+
+<h3>Abstract Data Types (ADTs)</h3>
+<p>An <strong>Abstract Data Type (ADT)</strong> defines <em>what</em> a data structure does, not <em>how</em> it does it. This is like a contract or interface.</p>
+<ul>
+  <li>A <strong>List ADT</strong> says: "I can insert, delete, and search for items." The implementation (Array vs. Linked List) is separate.</li>
+</ul>
+
+<h3>Big-O Notation (Preview)</h3>
+<p>We measure efficiency with <strong>Big-O notation</strong>. It describes how runtime grows as input size <code>n</code> grows:</p>
+<pre>O(1)    – Constant time (fastest) – array index access
+O(log n) – Logarithmic – binary search
+O(n)    – Linear – scanning all elements
+O(n²)   – Quadratic – nested loops (slow for large n)</pre>
+
+<h3>C++ Review: Arrays</h3>
+<p>The simplest data structure you already know:</p>
+<pre>int arr[5] = {10, 20, 30, 40, 50};
+cout &lt;&lt; arr[2];  // Output: 30 — O(1) access</pre>
+
+<h3>Key Takeaways</h3>
+<ul>
+  <li>Data structures organize data for efficient use.</li>
+  <li>ADTs define behavior; implementations provide the mechanism.</li>
+  <li>Big-O helps compare efficiency.</li>
+  <li>You will use all of this in every chapter ahead.</li>
+</ul>`,
+    quiz:[
+      {q:"What does ADT stand for?",opts:["Abstract Data Type","Array Data Transfer","Automated Data Tool","Abstract Design Template"],ans:0,exp:"ADT stands for Abstract Data Type — it defines what operations a structure supports without specifying how they are implemented."},
+      {q:"Which Big-O is most efficient (fastest)?",opts:["O(n²)","O(n)","O(log n)","O(1)"],ans:3,exp:"O(1) means constant time — the operation takes the same time regardless of input size, e.g., accessing an array by index."},
+      {q:"In C++, what does arr[3] represent for int arr[5] = {10,20,30,40,50}?",opts:["30","40","50","20"],ans:1,exp:"Array indices start at 0. arr[0]=10, arr[1]=20, arr[2]=30, arr[3]=40, arr[4]=50. So arr[3] = 40."},
+      {q:"A data structure that stores books in a line where you can only add/remove from the front is called?",opts:["Stack","Queue","Tree","Graph"],ans:1,exp:"A Queue follows FIFO (First In, First Out) — like a line of people or books added/removed from the front."},
+      {q:"Which statement about Big-O is TRUE?",opts:["O(n²) is better than O(n)","O(1) grows linearly with input","Big-O measures algorithm efficiency","Big-O is only used for memory"],ans:2,exp:"Big-O notation measures algorithm efficiency — specifically how runtime or space requirements grow as input size increases."},
+      {q:"Why do we need data structures beyond basic variables?",opts:["We don't — variables are enough","To organise and efficiently process large amounts of data","Data structures only matter in Java","They are required by the compiler"],ans:1,exp:"Basic variables store single values. Data structures let us organise, store, and efficiently process collections of data — essential for real programs."},
+      {q:"An Array in C++ provides which type of access?",opts:["O(n) sequential only","O(log n) binary","O(1) random access by index","O(n²) nested access"],ans:2,exp:"Arrays provide O(1) random access — you can directly jump to any element using its index without scanning others."},
+      {q:"Which is the CORRECT description of an Abstract Data Type?",opts:["A specific C++ class","A definition of behavior without implementation details","A type of loop","A built-in C++ library"],ans:1,exp:"An ADT defines WHAT operations are supported (the 'contract') without specifying HOW they are implemented. Example: List ADT can be implemented as an Array or Linked List."}
+    ]
+  },
+  {
+    id:1, title:"Arrays & Strings", icon:"📦",
+    tag:"Linear",
+    desc:"Static and dynamic arrays, 2D arrays, and string manipulation in C++.",
+    lesson:`
+<h3>Static Arrays</h3>
+<p>A <strong>static array</strong> has a fixed size set at compile time. All elements are stored <em>contiguously</em> (next to each other) in memory.</p>
+<pre>int grades[5] = {95, 87, 72, 88, 91};
+// Access: O(1) — direct index
+// Search: O(n) — must scan
+// Insert/Delete at middle: O(n) — must shift</pre>
+
+<h3>Dynamic Arrays (std::vector)</h3>
+<p>A <strong>dynamic array</strong> resizes automatically. In C++, this is <code>std::vector</code>:</p>
+<pre>#include &lt;vector&gt;
+vector&lt;int&gt; v = {1, 2, 3};
+v.push_back(4);    // Add to end: amortized O(1)
+v.pop_back();      // Remove from end: O(1)
+v.insert(v.begin()+1, 99); // Insert at index 1: O(n)
+cout &lt;&lt; v.size();  // Number of elements</pre>
+
+<h3>2D Arrays</h3>
+<p>Used for grids, matrices, game boards:</p>
+<pre>int matrix[3][3] = {
+  {1, 2, 3},
+  {4, 5, 6},
+  {7, 8, 9}
+};
+// Access element at row 1, col 2:
+cout &lt;&lt; matrix[1][2];  // Output: 6</pre>
+
+<h3>Array Traversal Patterns</h3>
+<pre>// Two-pointer technique (O(n))
+int left = 0, right = arr.size()-1;
+while(left &lt; right) {
+    // Process arr[left] and arr[right]
+    left++; right--;
+}
+
+// Sliding window (useful for substring problems)
+int windowSum = 0;
+for(int i = 0; i &lt; k; i++) windowSum += arr[i];
+// Slide window across array...</pre>
+
+<h3>Strings in C++</h3>
+<pre>#include &lt;string&gt;
+string s = "Hello";
+s.length();       // 5
+s[0];             // 'H' — O(1)
+s.substr(1, 3);   // "ell" — O(k)
+s.find("ll");     // index 2 — O(n)
+s += " World";    // Concatenate — O(n)</pre>
+
+<h3>Common Problems</h3>
+<ul>
+  <li><strong>Reverse an array:</strong> Two-pointer, swap left/right, move inward.</li>
+  <li><strong>Find max/min:</strong> Linear scan O(n).</li>
+  <li><strong>Check palindrome:</strong> Two-pointer comparing first and last characters.</li>
+</ul>`,
+    quiz:[
+      {q:"What is the time complexity of accessing arr[i] in a C++ array?",opts:["O(n)","O(log n)","O(1)","O(n²)"],ans:2,exp:"Array access by index is O(1) — constant time — because the memory address is computed directly: base_address + i * element_size."},
+      {q:"What happens to existing elements when you insert at the beginning of an array?",opts:["They are deleted","They shift right by one position","Nothing changes","They wrap to the end"],ans:1,exp:"Inserting at the beginning requires shifting ALL existing elements one position to the right to make room, making it O(n)."},
+      {q:"Which C++ container is a dynamic (resizable) array?",opts:["std::list","std::set","std::vector","std::map"],ans:2,exp:"std::vector is C++'s dynamic array. It automatically resizes when needed. push_back() is amortized O(1)."},
+      {q:"For matrix[2][1] in a 3x3 matrix, which element is accessed?",opts:["Row 1, Col 2","Row 2, Col 0","Row 2, Col 1","Row 0, Col 2"],ans:2,exp:"matrix[row][col] — matrix[2][1] accesses row index 2 (third row), column index 1 (second column)."},
+      {q:"What is the two-pointer technique used for?",opts:["Accessing 2D arrays","Efficiently solving problems with pairs of indices moving inward/outward","Creating dynamic arrays","Sorting in O(1)"],ans:1,exp:"The two-pointer technique uses two indices (typically left/right) that move toward or away from each other to solve problems in O(n) instead of O(n²)."},
+      {q:"string s = \"Data\"; what does s.length() return?",opts:["3","5","4","6"],ans:2,exp:"\"Data\" has 4 characters: D-a-t-a. s.length() returns 4."},
+      {q:"Which operation on a vector is O(n) (linear time)?",opts:["push_back()","Accessing v[i]","pop_back()","Inserting at the middle"],ans:3,exp:"Inserting in the middle requires shifting all elements after the insertion point — O(n). push_back and random access are O(1)."},
+      {q:"To reverse the string \"Hello\" using two pointers, what are the first characters swapped?",opts:["'H' and 'l'","'H' and 'o'","'e' and 'o'","'l' and 'l'"],ans:1,exp:"Two-pointer reversal starts with the outermost pair: index 0 ('H') and index 4 ('o') are swapped first, then move inward."}
+    ]
+  },
+  {
+    id:2, title:"Linked Lists", icon:"🔗",
+    tag:"Linear",
+    desc:"Singly and doubly linked lists, pointers, traversal, and common operations.",
+    lesson:`
+<h3>What Is a Linked List?</h3>
+<p>A <strong>linked list</strong> is a sequence of <strong>nodes</strong> where each node stores data and a <em>pointer</em> to the next node. Unlike arrays, nodes are NOT stored contiguously in memory.</p>
+
+<h3>Singly Linked List Node in C++</h3>
+<pre>struct Node {
+    int data;
+    Node* next;  // Pointer to next node
+    Node(int val) : data(val), next(nullptr) {}
+};</pre>
+
+<h3>Building a Linked List</h3>
+<pre>Node* head = new Node(10);
+head->next = new Node(20);
+head->next->next = new Node(30);
+// List: 10 -> 20 -> 30 -> nullptr</pre>
+
+<h3>Traversal — O(n)</h3>
+<pre>Node* curr = head;
+while(curr != nullptr) {
+    cout &lt;&lt; curr->data &lt;&lt; " ";
+    curr = curr->next;
+}</pre>
+
+<h3>Insert at Head — O(1)</h3>
+<pre>Node* insertHead(Node* head, int val) {
+    Node* newNode = new Node(val);
+    newNode->next = head;
+    return newNode;  // New head
+}</pre>
+
+<h3>Delete a Node — O(n)</h3>
+<pre>// Delete node with target value
+Node* curr = head;
+Node* prev = nullptr;
+while(curr && curr->data != target) {
+    prev = curr;
+    curr = curr->next;
+}
+if(prev) prev->next = curr->next;
+else head = curr->next;
+delete curr;</pre>
+
+<h3>Doubly Linked List</h3>
+<p>Each node has a pointer to BOTH next AND previous nodes:</p>
+<pre>struct DNode {
+    int data;
+    DNode* prev;
+    DNode* next;
+};</pre>
+<ul>
+  <li>Can traverse <em>backwards</em></li>
+  <li>Easier deletion (no need for <code>prev</code> pointer in loop)</li>
+  <li>Uses more memory (extra pointer per node)</li>
+</ul>
+
+<h3>Array vs. Linked List</h3>
+<ul>
+  <li><strong>Array:</strong> O(1) access, O(n) insert/delete at middle, fixed size</li>
+  <li><strong>Linked List:</strong> O(n) access, O(1) insert/delete at head, dynamic size</li>
+</ul>`,
+    quiz:[
+      {q:"What does each node in a singly linked list contain?",opts:["Only data","Data and two pointers","Data and a pointer to the next node","Only a pointer"],ans:2,exp:"A singly linked list node contains data (the value stored) and a pointer (next) pointing to the next node in the list."},
+      {q:"What is the time complexity of accessing the 5th element in a linked list?",opts:["O(1)","O(log n)","O(n)","O(5)"],ans:2,exp:"Unlike arrays, linked lists have no random access. You must traverse from the head, visiting each node: O(n) in worst case."},
+      {q:"Inserting a new node at the HEAD of a linked list is:",opts:["O(n) — must traverse","O(log n)","O(1) — just update head pointer","O(n²)"],ans:2,exp:"Inserting at the head only requires: create new node, set newNode->next = head, update head = newNode. This is O(1)."},
+      {q:"What happens if you forget to set the deleted node's predecessor's next pointer?",opts:["Nothing — memory auto-cleans","A memory leak and the list breaks (remaining nodes lost)","The node is automatically skipped","The program crashes immediately"],ans:1,exp:"Forgetting to update prev->next means the predecessor still points to the deleted node, causing the rest of the list to become inaccessible — a memory leak AND logical error."},
+      {q:"A doubly linked list differs from singly linked because:",opts:["It stores two data values per node","Each node has next AND prev pointers","It uses arrays internally","It can only go forward"],ans:1,exp:"Doubly linked lists have both next (forward) and prev (backward) pointers, enabling traversal in both directions."},
+      {q:"Which operation is FASTER in a linked list compared to an array?",opts:["Accessing element by index","Inserting at the head","Binary search","Sorting"],ans:1,exp:"Inserting at the head of a linked list is O(1) — just update the head pointer. In an array, this requires shifting ALL elements right: O(n)."},
+      {q:"What is the correct C++ syntax to create a new linked list node?",opts:["Node n = Node(5);","Node* n = new Node(5);","int* n = new int(5);","Node n* = malloc(Node);"],ans:1,exp:"In C++, dynamically allocated nodes use: Node* n = new Node(value); This creates the node on the heap and returns a pointer to it."},
+      {q:"To traverse a linked list to the LAST node, you stop when:",opts:["curr == head","curr->next == nullptr","curr->data == 0","curr->prev == nullptr"],ans:1,exp:"The last node has its next pointer set to nullptr. When curr->next == nullptr, we know curr IS the last node."}
+    ]
+  },
+  {
+    id:3, title:"Stacks", icon:"📚",
+    tag:"Linear",
+    desc:"LIFO principle, stack operations, and real-world applications in C++.",
+    lesson:`
+<h3>What Is a Stack?</h3>
+<p>A <strong>stack</strong> is a <em>Last In, First Out (LIFO)</em> data structure. Think of a stack of cafeteria trays — you add and remove only from the top.</p>
+
+<h3>Core Operations</h3>
+<ul>
+  <li><strong>push(x)</strong> — Add x to the top: O(1)</li>
+  <li><strong>pop()</strong> — Remove top element: O(1)</li>
+  <li><strong>top()/peek()</strong> — View top without removing: O(1)</li>
+  <li><strong>isEmpty()</strong> — Check if empty: O(1)</li>
+</ul>
+
+<h3>C++ std::stack</h3>
+<pre>#include &lt;stack&gt;
+stack&lt;int&gt; s;
+s.push(10);
+s.push(20);
+s.push(30);
+cout &lt;&lt; s.top();   // 30 (LIFO)
+s.pop();            // Removes 30
+cout &lt;&lt; s.top();   // 20
+cout &lt;&lt; s.size();  // 2
+cout &lt;&lt; s.empty(); // false (0)</pre>
+
+<h3>Stack Using Array (Manual Implementation)</h3>
+<pre>class Stack {
+    int arr[100];
+    int topIndex = -1;
+public:
+    void push(int x) { arr[++topIndex] = x; }
+    void pop()       { topIndex--; }
+    int top()        { return arr[topIndex]; }
+    bool isEmpty()   { return topIndex == -1; }
+};</pre>
+
+<h3>Real-World Applications</h3>
+<ul>
+  <li><strong>Function call stack:</strong> When foo() calls bar(), bar is pushed. When bar() returns, it's popped.</li>
+  <li><strong>Undo functionality:</strong> Each action is pushed; Ctrl+Z pops the last action.</li>
+  <li><strong>Bracket matching:</strong> Push opening brackets, pop on closing and check match.</li>
+  <li><strong>Expression evaluation:</strong> Postfix (Reverse Polish Notation) uses a stack.</li>
+</ul>
+
+<h3>Classic Problem: Balanced Parentheses</h3>
+<pre>bool isBalanced(string s) {
+    stack&lt;char&gt; st;
+    for(char c : s) {
+        if(c == '(' || c == '[' || c == '{')
+            st.push(c);
+        else {
+            if(st.empty()) return false;
+            char top = st.top(); st.pop();
+            if(c==')' && top!='(') return false;
+            if(c==']' && top!='[') return false;
+            if(c=='}' && top!='{') return false;
+        }
+    }
+    return st.empty();
+}</pre>`,
+    quiz:[
+      {q:"What does LIFO stand for?",opts:["List In, First Out","Last Input, First Output","Last In, First Out","Linear Input Flow Order"],ans:2,exp:"LIFO = Last In, First Out. The most recently added element is the first to be removed. Like a stack of plates."},
+      {q:"After push(5), push(10), push(15), what does top() return?",opts:["5","10","15","0"],ans:2,exp:"Elements were pushed in order: 5, then 10, then 15. The top (last in) is 15. LIFO means 15 comes out first."},
+      {q:"What is the time complexity of push() and pop() on a stack?",opts:["O(n)","O(log n)","O(1)","O(n²)"],ans:2,exp:"Stack push and pop only operate on the top element — no traversal needed. Both are O(1) constant time."},
+      {q:"Which real-world scenario best models a stack?",opts:["A queue at a grocery store checkout","A browser's back button history","Alphabetically sorted contacts","A round-robin scheduler"],ans:1,exp:"A browser's back button is LIFO — each visited page is 'pushed', and pressing Back 'pops' the most recent page first."},
+      {q:"For the balanced parentheses algorithm, what does an empty stack mean when a CLOSING bracket is encountered?",opts:["The string is balanced","There is no matching opening bracket — return false","Push the closing bracket","Continue normally"],ans:1,exp:"If the stack is empty when a closing bracket appears, there's no matching opening bracket. The string is NOT balanced — return false."},
+      {q:"In a function call stack, when does a function get POPPED?",opts:["When it is called","When it is defined","When it returns","When it has no parameters"],ans:2,exp:"A function is pushed onto the call stack when called and POPPED when it returns (finishes executing). This is how C++ manages function execution order."},
+      {q:"topIndex is -1 in the manual array stack implementation. What does this indicate?",opts:["Stack is full","Stack has one element","Stack overflow","Stack is empty"],ans:3,exp:"topIndex = -1 is the 'sentinel' value indicating the stack is empty. Before any push, topIndex starts at -1 (no valid index)."},
+      {q:"Which C++ header is needed for std::stack?",opts:["<array>","<list>","<stack>","<vector>"],ans:2,exp:"#include <stack> provides std::stack. Remember: each STL container has its own header: <vector>, <queue>, <stack>, <map>, etc."}
+    ]
+  },
+  {
+    id:4, title:"Queues", icon:"🚦",
+    tag:"Linear",
+    desc:"FIFO principle, queue variants, and practical applications.",
+    lesson:`
+<h3>What Is a Queue?</h3>
+<p>A <strong>queue</strong> is a <em>First In, First Out (FIFO)</em> data structure. Like a line at a ticket counter — the first person in line is the first served.</p>
+
+<h3>Core Operations</h3>
+<ul>
+  <li><strong>enqueue(x)</strong> — Add to back: O(1)</li>
+  <li><strong>dequeue()</strong> — Remove from front: O(1)</li>
+  <li><strong>front()</strong> — View front without removing: O(1)</li>
+  <li><strong>isEmpty()</strong> — Check if empty: O(1)</li>
+</ul>
+
+<h3>C++ std::queue</h3>
+<pre>#include &lt;queue&gt;
+queue&lt;int&gt; q;
+q.push(10);    // enqueue
+q.push(20);
+q.push(30);
+cout &lt;&lt; q.front(); // 10 (FIFO — first in)
+q.pop();            // Removes 10
+cout &lt;&lt; q.front(); // 20</pre>
+
+<h3>Circular Queue</h3>
+<p>Fixes the "wasted space" problem of a simple array queue by wrapping around:</p>
+<pre>// Next index calculation:
+rear = (rear + 1) % capacity;
+front = (front + 1) % capacity;</pre>
+
+<h3>Priority Queue</h3>
+<p>Elements are dequeued in priority order, not arrival order. In C++:</p>
+<pre>#include &lt;queue&gt;
+priority_queue&lt;int&gt; pq;  // Max-heap by default
+pq.push(5);
+pq.push(1);
+pq.push(9);
+cout &lt;&lt; pq.top();  // 9 (highest priority)
+pq.pop();
+cout &lt;&lt; pq.top();  // 5</pre>
+
+<h3>Deque (Double-Ended Queue)</h3>
+<pre>#include &lt;deque&gt;
+deque&lt;int&gt; dq;
+dq.push_front(1);  // Add to front
+dq.push_back(2);   // Add to back
+dq.pop_front();    // Remove from front
+dq.pop_back();     // Remove from back</pre>
+
+<h3>Real-World Applications</h3>
+<ul>
+  <li><strong>CPU scheduling:</strong> Processes wait in a queue to use the CPU.</li>
+  <li><strong>BFS (Graph traversal):</strong> Explores neighbors level by level using a queue.</li>
+  <li><strong>Printer queue:</strong> Documents print in the order submitted.</li>
+  <li><strong>Keyboard buffer:</strong> Keystrokes processed in order typed.</li>
+</ul>`,
+    quiz:[
+      {q:"What does FIFO stand for?",opts:["Fast Input, Fast Output","First In, First Out","Final Input, Final Output","Fixed Input, Fixed Output"],ans:1,exp:"FIFO = First In, First Out. The first element added is the first to be removed. Like a real-world queue/line."},
+      {q:"After enqueue(1), enqueue(2), enqueue(3), what does front() return?",opts:["3","2","1","0"],ans:2,exp:"1 was enqueued first, so it is at the front. FIFO means the first element added is the first one accessible from the front."},
+      {q:"What problem does a Circular Queue solve?",opts:["Slow enqueue","Wasted memory space when elements are dequeued from the front","Priority ordering","Memory leaks"],ans:1,exp:"In a simple array queue, front moves right as elements dequeue, wasting the left portion. A circular queue reuses that space by wrapping the index around using modulo."},
+      {q:"In C++ std::priority_queue<int>, which element is at the top by default?",opts:["Smallest element","Most recently added","Largest element (max-heap)","First element added"],ans:2,exp:"C++ priority_queue is a max-heap by default — the largest element is always at the top and dequeued first."},
+      {q:"Which algorithm uses a queue as its core data structure?",opts:["Depth-First Search (DFS)","Merge Sort","Breadth-First Search (BFS)","Binary Search"],ans:2,exp:"BFS (Breadth-First Search) uses a queue to explore nodes level by level — enqueue neighbors, process in FIFO order."},
+      {q:"A deque differs from a queue because:",opts:["It's slower","It only allows rear insertion","It allows insertion and deletion at BOTH ends","It uses priority ordering"],ans:2,exp:"Deque (Double-Ended Queue) supports push_front, push_back, pop_front, and pop_back — insertions and deletions at both ends."},
+      {q:"What is the time complexity of enqueue and dequeue in a standard queue?",opts:["O(n)","O(log n)","O(1)","O(n²)"],ans:2,exp:"Both enqueue (add to back) and dequeue (remove from front) are O(1) in a properly implemented queue — constant time operations."},
+      {q:"Which is NOT a real-world application of queues?",opts:["Printer spooler","CPU process scheduling","Browser back button","BFS graph traversal"],ans:2,exp:"A browser's back button uses LIFO (Stack), not a Queue. The rest — printer spooler, CPU scheduling, BFS — all use FIFO Queue ordering."}
+    ]
+  },
+  {
+    id:5, title:"Trees & Binary Trees", icon:"🌳",
+    tag:"Non-Linear",
+    desc:"Tree terminology, binary trees, BST, traversals, and tree properties.",
+    lesson:`
+<h3>Tree Terminology</h3>
+<ul>
+  <li><strong>Root:</strong> The topmost node (no parent)</li>
+  <li><strong>Leaf:</strong> A node with no children</li>
+  <li><strong>Height:</strong> Longest path from root to a leaf</li>
+  <li><strong>Depth:</strong> Distance from root to a specific node</li>
+  <li><strong>Parent / Child:</strong> Hierarchical relationship between nodes</li>
+</ul>
+
+<h3>Binary Tree Node in C++</h3>
+<pre>struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+};</pre>
+
+<h3>Binary Search Tree (BST)</h3>
+<p>A BST maintains this property: <strong>left child < node < right child</strong> (for ALL descendants).</p>
+<pre>// Search in BST: O(h) where h = height
+TreeNode* search(TreeNode* root, int target) {
+    if(!root || root->val == target) return root;
+    if(target < root->val) return search(root->left, target);
+    return search(root->right, target);
+}</pre>
+
+<h3>Tree Traversals</h3>
+<pre>// In-order (Left → Root → Right) — gives SORTED output for BST
+void inorder(TreeNode* root) {
+    if(!root) return;
+    inorder(root->left);
+    cout &lt;&lt; root->val &lt;&lt; " ";
+    inorder(root->right);
+}
+
+// Pre-order (Root → Left → Right) — used to copy trees
+void preorder(TreeNode* root) {
+    if(!root) return;
+    cout &lt;&lt; root->val &lt;&lt; " ";
+    preorder(root->left);
+    preorder(root->right);
+}
+
+// Post-order (Left → Right → Root) — used to delete trees
+void postorder(TreeNode* root) {
+    if(!root) return;
+    postorder(root->left);
+    postorder(root->right);
+    cout &lt;&lt; root->val &lt;&lt; " ";
+}</pre>
+
+<h3>BST Insert</h3>
+<pre>TreeNode* insert(TreeNode* root, int val) {
+    if(!root) return new TreeNode(val);
+    if(val < root->val) root->left = insert(root->left, val);
+    else root->right = insert(root->right, val);
+    return root;
+}</pre>
+
+<h3>Time Complexities</h3>
+<ul>
+  <li><strong>Balanced BST:</strong> Search, Insert, Delete = O(log n)</li>
+  <li><strong>Unbalanced / Skewed BST:</strong> Degrades to O(n)</li>
+</ul>`,
+    quiz:[
+      {q:"In a Binary Search Tree, where are values SMALLER than the root stored?",opts:["Right subtree","Root itself","Left subtree","Any position"],ans:2,exp:"BST property: values smaller than the node go LEFT, values larger go RIGHT. This applies recursively to every node."},
+      {q:"Which traversal of a BST produces elements in SORTED order?",opts:["Pre-order","Post-order","In-order","Level-order"],ans:2,exp:"In-order traversal (Left → Root → Right) visits nodes in ascending order for a valid BST, producing a sorted output."},
+      {q:"A leaf node in a tree is:",opts:["The topmost node","A node with no children","A node with two children","The deepest node always"],ans:1,exp:"A leaf node has no children — both its left and right pointers are nullptr. Leaf nodes are at the 'edges' of the tree."},
+      {q:"What is the time complexity of searching a BALANCED BST?",opts:["O(n)","O(n²)","O(log n)","O(1)"],ans:2,exp:"In a balanced BST, each comparison eliminates half the remaining nodes — just like binary search. This gives O(log n)."},
+      {q:"Pre-order traversal visits nodes in which order?",opts:["Left → Right → Root","Root → Left → Right","Left → Root → Right","Right → Root → Left"],ans:1,exp:"Pre-order: Root FIRST, then Left subtree, then Right subtree. Remember: Pre = Root comes first."},
+      {q:"If a BST becomes completely skewed (all nodes in a line), search time becomes:",opts:["O(log n)","O(1)","O(n) — like a linked list","O(n log n)"],ans:2,exp:"A skewed BST is essentially a linked list. Search must traverse every node in the worst case, degrading from O(log n) to O(n)."},
+      {q:"Post-order traversal is typically used for:",opts:["Sorted output","Creating a copy","Deleting a tree (children before parent)","Finding height"],ans:2,exp:"Post-order (Left → Right → Root) processes children before the parent, which is why it's used for deleting trees — you free children's memory before the parent's."},
+      {q:"BST Insert: where does the value 7 go in a BST with root 10, left child 5?",opts:["Left of 5","Right of 5 (between 5 and 10)","Right of 10","Left of 10, right of 5"],ans:1,exp:"7 > 5 so go right of 5. 7 < 10 so stay in the left subtree. Result: 7 becomes the right child of 5. Path: root(10) → left(5) → right(7)."}
+    ]
+  },
+  {
+    id:6, title:"Hash Tables", icon:"#️⃣",
+    tag:"Non-Linear",
+    desc:"Hashing concepts, collision handling, and C++ unordered_map.",
+    lesson:`
+<h3>What Is a Hash Table?</h3>
+<p>A <strong>hash table</strong> maps <em>keys</em> to <em>values</em> using a <strong>hash function</strong>. The hash function converts a key into an array index where the value is stored.</p>
+
+<h3>Hash Function</h3>
+<pre>index = hash(key) % tableSize;
+// Example: key = "Alice", tableSize = 10
+// hash("Alice") might return 12345
+// 12345 % 10 = 5  → stored at index 5</pre>
+
+<h3>C++ unordered_map (Hash Table)</h3>
+<pre>#include &lt;unordered_map&gt;
+unordered_map&lt;string, int&gt; scores;
+scores["Alice"] = 95;
+scores["Bob"] = 87;
+scores["Carol"] = 92;
+
+cout &lt;&lt; scores["Alice"];       // 95 — O(1) average
+scores["Bob"] = 90;             // Update — O(1)
+scores.erase("Carol");          // Delete — O(1)
+cout &lt;&lt; scores.count("Dave");  // 0 (not found)
+
+// Iterate:
+for(auto& [name, score] : scores)
+    cout &lt;&lt; name &lt;&lt; ": " &lt;&lt; score;</pre>
+
+<h3>Collisions</h3>
+<p>A <strong>collision</strong> occurs when two different keys hash to the SAME index. Two main strategies:</p>
+
+<h4>1. Chaining (Separate Chaining)</h4>
+<ul>
+  <li>Each bucket holds a <em>linked list</em> of entries with that hash index.</li>
+  <li>Simple to implement; handles high load factor well.</li>
+  <li>Extra memory for pointers.</li>
+</ul>
+
+<h4>2. Open Addressing (Linear Probing)</h4>
+<ul>
+  <li>If bucket is full, try next bucket: <code>index = (index + 1) % size</code></li>
+  <li>No extra memory for lists, but clustering can occur.</li>
+</ul>
+
+<h3>Load Factor</h3>
+<pre>load factor = n / capacity  (n = number of stored entries)
+// Rehash when load factor > 0.75 (typical threshold)
+// Rehashing: create larger table, re-insert all entries</pre>
+
+<h3>Time Complexities</h3>
+<ul>
+  <li><strong>Average case:</strong> Insert, Search, Delete = O(1)</li>
+  <li><strong>Worst case (many collisions):</strong> O(n)</li>
+</ul>
+
+<h3>Classic Use Case: Frequency Count</h3>
+<pre>string text = "hello world";
+unordered_map&lt;char,int&gt; freq;
+for(char c : text) freq[c]++;
+// freq['l'] = 3, freq['o'] = 2, etc.</pre>`,
+    quiz:[
+      {q:"What is the average time complexity for lookup in a hash table?",opts:["O(n)","O(log n)","O(1)","O(n²)"],ans:2,exp:"Hash tables achieve O(1) average-case lookup because the hash function directly computes the bucket index — no searching needed."},
+      {q:"A collision in a hash table occurs when:",opts:["The table is full","Two different keys hash to the same index","The hash function returns 0","The key is not a string"],ans:1,exp:"A collision happens when two different keys produce the same hash index. Collision resolution strategies (chaining, open addressing) handle this."},
+      {q:"In separate chaining, each bucket contains:",opts:["A single value only","A binary tree","A linked list of entries that share that hash","An array of fixed size"],ans:2,exp:"Separate chaining resolves collisions by storing all entries with the same hash in a linked list at that bucket. Multiple entries coexist."},
+      {q:"What is the load factor formula?",opts:["capacity / n","n * capacity","n / capacity","hash(key) / capacity"],ans:2,exp:"Load factor = n / capacity, where n is the number of stored entries. A high load factor (>0.75) triggers rehashing to maintain O(1) performance."},
+      {q:"Which C++ container implements a hash table?",opts:["std::map","std::set","std::vector","std::unordered_map"],ans:3,exp:"std::unordered_map uses a hash table internally for O(1) average operations. std::map uses a Red-Black Tree for O(log n) operations."},
+      {q:"In linear probing (open addressing), where does a colliding element go?",opts:["Into a linked list at the same bucket","Into a separate overflow table","The next available bucket in sequence","It is discarded"],ans:2,exp:"Linear probing: if index i is occupied, try i+1, i+2, ... (wrapping with modulo) until an empty slot is found."},
+      {q:"What triggers a rehash in a hash table?",opts:["When a collision occurs","When the load factor exceeds a threshold (~0.75)","When searching fails","Every 100 insertions"],ans:1,exp:"When the load factor becomes too high (typically >0.75), performance degrades. Rehashing creates a larger table and reinserts all entries."},
+      {q:"Which is the BEST use case for a hash table vs. an array?",opts:["When you need sorted output","When accessing elements by numeric index","When looking up values by arbitrary keys (like names)","When memory is extremely limited"],ans:2,exp:"Hash tables excel at key-value lookup with arbitrary keys (strings, etc.). Arrays require numeric indices. Use hash tables for lookups like 'find score for Alice'."}
+    ]
+  },
+  {
+    id:7, title:"Sorting Algorithms", icon:"🔀",
+    tag:"Algorithms",
+    desc:"Bubble, selection, insertion, merge sort, quick sort — complexity & comparisons.",
+    lesson:`
+<h3>Why Sorting Matters</h3>
+<p>Sorted data enables binary search (O(log n) instead of O(n)), improves readability, and is a prerequisite for many algorithms.</p>
+
+<h3>Bubble Sort — O(n²)</h3>
+<pre>void bubbleSort(vector&lt;int&gt;& arr) {
+    int n = arr.size();
+    for(int i = 0; i &lt; n-1; i++)
+        for(int j = 0; j &lt; n-i-1; j++)
+            if(arr[j] &gt; arr[j+1])
+                swap(arr[j], arr[j+1]);
+}
+// Each pass bubbles the largest to the end
+// Simple but slow for large input</pre>
+
+<h3>Selection Sort — O(n²)</h3>
+<pre>void selectionSort(vector&lt;int&gt;& arr) {
+    int n = arr.size();
+    for(int i = 0; i &lt; n-1; i++) {
+        int minIdx = i;
+        for(int j = i+1; j &lt; n; j++)
+            if(arr[j] &lt; arr[minIdx]) minIdx = j;
+        swap(arr[i], arr[minIdx]);
+    }
+}</pre>
+
+<h3>Insertion Sort — O(n²) worst, O(n) best</h3>
+<pre>void insertionSort(vector&lt;int&gt;& arr) {
+    for(int i = 1; i &lt; arr.size(); i++) {
+        int key = arr[i], j = i-1;
+        while(j >= 0 && arr[j] > key) {
+            arr[j+1] = arr[j]; j--;
+        }
+        arr[j+1] = key;
+    }
+}
+// Efficient for nearly-sorted data</pre>
+
+<h3>Merge Sort — O(n log n)</h3>
+<pre>void merge(vector&lt;int&gt;& arr, int l, int m, int r) {
+    vector&lt;int&gt; left(arr.begin()+l, arr.begin()+m+1);
+    vector&lt;int&gt; right(arr.begin()+m+1, arr.begin()+r+1);
+    int i=0,j=0,k=l;
+    while(i&lt;left.size() && j&lt;right.size())
+        arr[k++] = (left[i]&lt;=right[j]) ? left[i++] : right[j++];
+    while(i&lt;left.size()) arr[k++]=left[i++];
+    while(j&lt;right.size()) arr[k++]=right[j++];
+}
+// Divide-and-conquer, stable sort, extra O(n) space</pre>
+
+<h3>Quick Sort — O(n log n) average, O(n²) worst</h3>
+<pre>int partition(vector&lt;int&gt;& arr, int low, int high) {
+    int pivot = arr[high], i = low-1;
+    for(int j = low; j &lt; high; j++)
+        if(arr[j] &lt;= pivot) swap(arr[++i], arr[j]);
+    swap(arr[i+1], arr[high]);
+    return i+1;
+}
+// In-place, cache-friendly, widely used</pre>
+
+<h3>Comparison Table</h3>
+<pre>Algorithm     Best      Avg       Worst     Space  Stable?
+Bubble Sort   O(n)      O(n²)     O(n²)     O(1)   Yes
+Selection     O(n²)     O(n²)     O(n²)     O(1)   No
+Insertion     O(n)      O(n²)     O(n²)     O(1)   Yes
+Merge Sort    O(nlogn)  O(nlogn)  O(nlogn)  O(n)   Yes
+Quick Sort    O(nlogn)  O(nlogn)  O(n²)     O(logn) No</pre>`,
+    quiz:[
+      {q:"What is the time complexity of Bubble Sort in the worst case?",opts:["O(n)","O(n log n)","O(n²)","O(log n)"],ans:2,exp:"Bubble Sort compares every pair of adjacent elements with nested loops — O(n²) comparisons in the worst case (reverse-sorted input)."},
+      {q:"Which sort has the BEST worst-case time complexity?",opts:["Bubble Sort","Selection Sort","Insertion Sort","Merge Sort"],ans:3,exp:"Merge Sort guarantees O(n log n) in ALL cases (best, average, worst) by always dividing and merging. Quick Sort degrades to O(n²) in the worst case."},
+      {q:"Insertion Sort performs best when the input is:",opts:["Reverse sorted","Random","Nearly sorted or small","Fully sorted but reversed"],ans:2,exp:"Insertion Sort's inner loop does minimal work when elements are nearly in place. For nearly-sorted data, it approaches O(n) — very efficient."},
+      {q:"What additional space does Merge Sort require?",opts:["O(1) — in-place","O(log n)","O(n) — for the temporary merged arrays","O(n²)"],ans:2,exp:"Merge Sort requires O(n) extra space for temporary arrays during the merge step. This is a trade-off for its guaranteed O(n log n) time."},
+      {q:"Quick Sort's worst case O(n²) occurs when:",opts:["Input is already sorted and pivot is always smallest or largest","Input is random","Input has duplicates","Array size is odd"],ans:0,exp:"When the pivot is always the minimum or maximum (e.g., sorted input with last element as pivot), Quick Sort creates maximally unbalanced partitions, degrading to O(n²)."},
+      {q:"A 'stable' sort means:",opts:["It always runs in O(n log n)","Equal elements maintain their original relative order","It uses no extra memory","It works for any data type"],ans:1,exp:"A stable sort preserves the original order of equal elements. Example: sorting students by grade — students with the same grade keep their original order. Merge Sort is stable; Quick Sort is not."},
+      {q:"Selection Sort's defining characteristic is:",opts:["Building sorted portion by inserting one element at a time","Repeatedly finding the minimum and placing it in position","Comparing adjacent elements repeatedly","Dividing array in half each time"],ans:1,exp:"Selection Sort finds the minimum element in the unsorted portion and swaps it to its correct position, growing the sorted portion one element at a time."},
+      {q:"Which is the BEST choice for sorting a very large dataset where memory is limited?",opts:["Merge Sort","Bubble Sort","Quick Sort (with good pivot)","Insertion Sort"],ans:2,exp:"Quick Sort is in-place (O(log n) stack space) and has excellent average-case performance. For large datasets where O(n) extra memory is costly, Quick Sort outperforms Merge Sort in practice."}
+    ]
+  },
+  {
+    id:8, title:"Graphs", icon:"🕸️",
+    tag:"Non-Linear",
+    desc:"Graph representations, BFS, DFS, and common graph algorithms.",
+    lesson:`
+<h3>What Is a Graph?</h3>
+<p>A <strong>graph</strong> G = (V, E) consists of <strong>Vertices (V)</strong> (nodes) and <strong>Edges (E)</strong> (connections between nodes). Unlike trees, graphs can have cycles.</p>
+
+<h3>Types of Graphs</h3>
+<ul>
+  <li><strong>Directed:</strong> Edges have direction (A → B ≠ B → A). Example: Twitter follows.</li>
+  <li><strong>Undirected:</strong> Edges go both ways. Example: Facebook friends.</li>
+  <li><strong>Weighted:</strong> Edges have costs/distances. Example: Road distances.</li>
+  <li><strong>Cyclic/Acyclic:</strong> Whether cycles (loops) exist.</li>
+</ul>
+
+<h3>Graph Representations</h3>
+<h4>Adjacency Matrix — O(V²) space</h4>
+<pre>// 1 means edge exists, 0 means no edge
+int adj[4][4] = {
+  {0,1,0,1},  // Node 0 connects to 1,3
+  {1,0,1,0},  // Node 1 connects to 0,2
+  {0,1,0,1},  // etc.
+  {1,0,1,0}
+};</pre>
+
+<h4>Adjacency List — O(V+E) space</h4>
+<pre>#include &lt;vector&gt;
+vector&lt;vector&lt;int&gt;&gt; adj(4);
+adj[0].push_back(1);  // 0 → 1
+adj[0].push_back(3);  // 0 → 3
+adj[1].push_back(0);  // 1 → 0 (undirected)
+// More space-efficient for sparse graphs</pre>
+
+<h3>BFS — Breadth-First Search</h3>
+<pre>void bfs(int start, vector&lt;vector&lt;int&gt;&gt;& adj) {
+    vector&lt;bool&gt; visited(adj.size(), false);
+    queue&lt;int&gt; q;
+    q.push(start);
+    visited[start] = true;
+    while(!q.empty()) {
+        int node = q.front(); q.pop();
+        cout &lt;&lt; node &lt;&lt; " ";
+        for(int neighbor : adj[node])
+            if(!visited[neighbor]) {
+                visited[neighbor] = true;
+                q.push(neighbor);
+            }
+    }
+}
+// Time: O(V+E) | Finds SHORTEST PATH in unweighted graphs</pre>
+
+<h3>DFS — Depth-First Search</h3>
+<pre>void dfs(int node, vector&lt;vector&lt;int&gt;&gt;& adj, vector&lt;bool&gt;& visited) {
+    visited[node] = true;
+    cout &lt;&lt; node &lt;&lt; " ";
+    for(int neighbor : adj[node])
+        if(!visited[neighbor])
+            dfs(neighbor, adj, visited);
+}
+// Time: O(V+E) | Uses call stack recursion | Finds path existence</pre>`,
+    quiz:[
+      {q:"In a graph, an 'edge' represents:",opts:["A node's stored value","A connection between two vertices","The total number of nodes","A graph's weight"],ans:1,exp:"In a graph G=(V,E), vertices (V) are the nodes and edges (E) are the connections between pairs of vertices."},
+      {q:"Which graph representation uses O(V+E) space?",opts:["Adjacency Matrix","Adjacency List","2D Array","Hash Matrix"],ans:1,exp:"Adjacency List stores only existing edges — O(V+E) space. Adjacency Matrix stores ALL possible edges — O(V²) space, wasteful for sparse graphs."},
+      {q:"BFS uses which data structure internally?",opts:["Stack","Priority Queue","Queue","Linked List"],ans:2,exp:"BFS uses a Queue (FIFO) to explore nodes level by level. Each visited node's unvisited neighbors are enqueued for processing."},
+      {q:"DFS explores a graph by:",opts:["Visiting all neighbors before going deeper","Going as deep as possible before backtracking","Processing nodes in shortest-path order","Visiting nodes randomly"],ans:1,exp:"DFS (Depth-First Search) goes as far down one path as possible before backtracking and exploring other branches — using a stack (recursive or explicit)."},
+      {q:"Which algorithm finds the SHORTEST PATH in an unweighted graph?",opts:["DFS","BFS","Insertion Sort","Binary Search"],ans:1,exp:"BFS explores level by level — the first time it reaches a node is via the shortest path (fewest edges) in an unweighted graph."},
+      {q:"A directed graph differs from an undirected graph because:",opts:["It has no cycles","Edges have a specific direction (A→B ≠ B→A)","It cannot be represented as a matrix","All edges have weights"],ans:1,exp:"In a directed graph, edge A→B means you can go from A to B but NOT necessarily B to A. Twitter follows are directed (you can follow someone who doesn't follow back)."},
+      {q:"The time complexity of both BFS and DFS is:",opts:["O(V²)","O(V × E)","O(V + E)","O(log V)"],ans:2,exp:"Both BFS and DFS visit every vertex once and traverse every edge once — O(V+E) time complexity, where V = vertices and E = edges."},
+      {q:"Why must we track 'visited' nodes in BFS/DFS?",opts:["To count the nodes","To avoid infinite loops in cyclic graphs","To sort the output","To measure edge weights"],ans:1,exp:"Without tracking visited nodes, BFS/DFS could revisit nodes forever in a cyclic graph, causing an infinite loop. The visited array prevents this."}
+    ]
+  }
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  xp: 0,
+  currentChapter: 0,
+  chapterScores: {},   // {chapterId: score%}
+  unlockedChapters: [0],
+  chatHistory: [],     // [{role,content}]
+  currentView: 'chat',
+  quizState: null,
+  scheduleDone: {}
+};
+
+const PASS_THRESHOLD = 75;
+const XP_PER_QUESTION = 10;
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('studybot_v3');
+    if(saved) Object.assign(state, JSON.parse(saved));
+  } catch(e){}
+}
+function saveState() {
+  try { localStorage.setItem('studybot_v3', JSON.stringify(state)); } catch(e){}
+}
+loadState();
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function switchView(view) {
+  state.currentView = view;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(view+'View').classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t=>{
+    if(t.textContent.toLowerCase().includes(view.slice(0,4))) t.classList.add('active');
+  });
+  if(view==='quiz') renderQuizSelector();
+  if(view==='learn') renderLearnGrid();
+  if(view==='schedule') renderSchedule();
+}
+
+// ============================================================
+// SIDEBAR
+// ============================================================
+function renderSidebar() {
+  const list = document.getElementById('chapterList');
+  list.innerHTML = CHAPTERS.map(ch=>{
+    const unlocked = state.unlockedChapters.includes(ch.id);
+    const score = state.chapterScores[ch.id];
+    const isCurrent = ch.id === state.currentChapter;
+    let cls = unlocked ? (isCurrent?'active':'') : 'locked';
+    if(score>=PASS_THRESHOLD) cls += ' completed';
+    let iconCls = 'locked-icon';
+    if(score>=PASS_THRESHOLD) iconCls='done-icon';
+    else if(unlocked) iconCls='active-icon';
+    let scoreBadge = score!==undefined ? `<span class="ch-score ${score>=PASS_THRESHOLD?'pass':'fail'}">${score}%</span>` : '';
+    return `<div class="chapter-item ${cls}" onclick="${unlocked?`openChapter(${ch.id})`:'showToast(\'Complete previous chapters to unlock.\',\'error\')'}">
+      <div class="ch-icon ${iconCls}">${unlocked?(score>=PASS_THRESHOLD?'✓':ch.icon):'🔒'}</div>
+      <div class="ch-info">
+        <div class="ch-name">Ch.${ch.id+1} ${ch.title}</div>
+        <div class="ch-sub">${ch.tag}</div>
+      </div>
+      ${scoreBadge}
+    </div>`;
+  }).join('');
+
+  const done = Object.values(state.chapterScores).filter(s=>s>=PASS_THRESHOLD).length;
+  const pct = Math.round(done/CHAPTERS.length*100);
+  document.getElementById('overallPct').textContent = pct+'%';
+  document.getElementById('overallBar').style.width = pct+'%';
+
+  // XP
+  const maxXP = CHAPTERS.length * 8 * XP_PER_QUESTION;
+  const xpPct = Math.min(100, Math.round(state.xp/maxXP*100));
+  document.getElementById('xpBar').style.width = xpPct+'%';
+  document.getElementById('xpLabel').textContent = state.xp+' XP';
+  document.getElementById('chapterBadge').textContent = 'Ch. '+(state.currentChapter+1);
+}
+
+function openChapter(id) {
+  state.currentChapter = id;
+  saveState();
+  renderSidebar();
+  switchView('chat');
+  const ch = CHAPTERS[id];
+  addBotMsg(`<h3>${ch.icon} Chapter ${id+1}: ${ch.title}</h3>
+<p>Great choice! Let's work on <strong>${ch.title}</strong>.</p>
+<p>What would you like to do?</p>
+<div class="quick-chips">
+  <span class="chip" onclick="sendDirect('Explain ${ch.title} from scratch')">📖 Full Lesson</span>
+  <span class="chip" onclick="switchView('quiz')">🧠 Take Quiz</span>
+  <span class="chip" onclick="sendDirect('Give me a practice problem on ${ch.title}')">💡 Practice Problem</span>
+  <span class="chip" onclick="sendDirect('Summarize ${ch.title} key points')">📋 Key Points</span>
+</div>`);
+}
+
+// ============================================================
+// CHAT
+// ============================================================
+const SYSTEM_PROMPT = `You are Study Bot, an expert AI tutor for Data Structures aimed at beginners who have completed C++ Programming 1 and 2.
+
+CURRICULUM CHAPTERS (in order):
+${CHAPTERS.map((ch,i)=>`${i+1}. ${ch.title} (${ch.tag})`).join('\n')}
+
+YOUR TEACHING RULES:
+- First gauge the student's understanding before explaining.
+- Use C++ code examples — the student knows C++ basics (variables, loops, functions, classes, pointers).
+- Explain ALL jargon before using it.
+- Walk through problems STEP BY STEP.
+- After each explanation, ask a follow-up comprehension question.
+- When the student gets something wrong, gently correct and explain WHY — do not just give the answer.
+- Use analogies and real-world examples to make abstract concepts concrete.
+- Be encouraging but academically rigorous — push them to think deeper.
+- Use headings, bullet points, code blocks for clarity.
+- Keep responses focused and appropriately concise (not overwhelming).
+- If asked for a quiz, remind them to use the Quiz tab for the official chapter quiz.
+- Vary teaching: sometimes explain, sometimes quiz with a question, sometimes use analogies.`;
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+  input.style.height='auto';
+  addUserMsg(text);
+  await getBotResponse(text);
+}
+
+async function sendDirect(text) {
+  addUserMsg(text);
+  await getBotResponse(text);
+  switchView('chat');
+}
+
+function handleKey(e) {
+  if(e.key==='Enter' && !e.shiftKey){e.preventDefault();sendMessage();}
+}
+
+function autoGrow(el) {
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,120)+'px';
+}
+
+function addUserMsg(text) {
+  state.chatHistory.push({role:'user',content:text});
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className='msg user';
+  div.innerHTML=`<div class="msg-avatar user-avatar">👤</div><div class="msg-content">${escHtml(text)}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function addBotMsg(html) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className='msg bot';
+  div.innerHTML=`<div class="msg-avatar bot-avatar">🎓</div><div class="msg-content">${html}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className='msg bot';div.id='typingMsg';
+  div.innerHTML=`<div class="msg-avatar bot-avatar">🎓</div><div class="msg-content"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+function removeTyping(){const t=document.getElementById('typingMsg');if(t)t.remove();}
+
+function escHtml(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function formatBotResponse(text) {
+  // Convert markdown-like syntax to HTML
+  text = text.replace(/```(\w*)\n([\s\S]*?)```/g, (m,lang,code)=>`<pre>${escHtml(code.trim())}</pre>`);
+  text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+  text = text.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  text = text.replace(/\*([^*]+)\*/g,'<em>$1</em>');
+  text = text.replace(/^### (.+)$/gm,'<h3>$1</h3>');
+  text = text.replace(/^## (.+)$/gm,'<h3>$1</h3>');
+  text = text.replace(/^# (.+)$/gm,'<h3>$1</h3>');
+  text = text.replace(/^#### (.+)$/gm,'<h4>$1</h4>');
+  text = text.replace(/^\d+\. (.+)$/gm,'<li>$1</li>');
+  text = text.replace(/^[-*] (.+)$/gm,'<li>$1</li>');
+  text = text.replace(/(<li>[\s\S]*?<\/li>)+/g, m=>`<ul>${m}</ul>`);
+  text = text.replace(/\n\n/g,'</p><p>').replace(/^([^<].+)$/gm,'<p>$1</p>');
+  text = text.replace(/<p><\/p>/g,'');
+  return text;
+}
+
+async function getBotResponse(userText) {
+  document.getElementById('sendBtn').disabled=true;
+  showTyping();
+
+  const ch = CHAPTERS[state.currentChapter];
+  const contextMsg = `Current chapter: ${ch.title}. Student's chapter history: ${JSON.stringify(state.chapterScores)}`;
+
+  const messages = [
+    ...state.chatHistory.slice(-12).map((m,i,arr)=>({role:m.role,content:m.content}))
+  ];
+  // Ensure last message is from user
+  if(messages[messages.length-1]?.role!=='user') messages.push({role:'user',content:userText});
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':'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',
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system: SYSTEM_PROMPT+'\n\nContext: '+contextMsg,
+        messages
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.map(b=>b.text||'').join('') || 'I had trouble responding. Please try again.';
+    state.chatHistory.push({role:'assistant',content:reply});
+    removeTyping();
+    addBotMsg(formatBotResponse(reply));
+    saveState();
+  } catch(e) {
+    removeTyping();
+    addBotMsg(`<p>⚠️ Connection error. Please check your internet and try again.</p>`);
+  }
+  document.getElementById('sendBtn').disabled=false;
+}
+
+// ============================================================
+// LEARN VIEW
+// ============================================================
+function renderLearnGrid() {
+  const grid = document.getElementById('learnGrid');
+  grid.innerHTML = CHAPTERS.map(ch=>{
+    const unlocked = state.unlockedChapters.includes(ch.id);
+    const score = state.chapterScores[ch.id];
+    return `<div class="concept-card ${unlocked?'':'locked'}" onclick="${unlocked?`openLesson(${ch.id})`:'showToast(\'Complete previous chapters first!\',\'error\')'}">
+      <div class="card-icon">${ch.icon}${!unlocked?'🔒':''}</div>
+      <div class="card-title">Ch.${ch.id+1} — ${ch.title}</div>
+      <div class="card-desc">${ch.desc}</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:12px;">
+        <span class="card-tag">${ch.tag}</span>
+        ${score!==undefined?`<span class="ch-score ${score>=PASS_THRESHOLD?'pass':'fail'}" style="margin:0;">${score}%</span>`:''}
+        ${!unlocked?'<span class="ch-score fail" style="margin:0;">🔒 Locked</span>':''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+let activeLesson = 0;
+function openLesson(id) {
+  activeLesson = id;
+  const ch = CHAPTERS[id];
+  document.getElementById('modalTitle').innerHTML=`${ch.icon} Chapter ${id+1}: ${ch.title}`;
+  document.getElementById('modalContent').innerHTML=ch.lesson;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(e){if(e.target===document.getElementById('modalOverlay'))closeModalDirect();}
+function closeModalDirect(){document.getElementById('modalOverlay').classList.remove('open');}
+function startChapterQuiz(){
+  closeModalDirect();
+  state.currentChapter=activeLesson;
+  switchView('quiz');
+}
+
+// ============================================================
+// QUIZ
+// ============================================================
+function renderQuizSelector() {
+  const content = document.getElementById('quizContent');
+  const ch = CHAPTERS[state.currentChapter];
+  document.getElementById('quizTitle').textContent = `Chapter ${state.currentChapter+1} Quiz`;
+  document.getElementById('quizMeta').textContent = `${ch.title} — 8 Questions`;
+  document.getElementById('quizProgressFill').style.width='0%';
+
+  const unlocked = state.unlockedChapters.includes(state.currentChapter);
+  if(!unlocked){
+    content.innerHTML=`<div class="question-card"><p style="color:var(--text2)">🔒 Complete previous chapters to unlock this quiz.</p></div>`;
+    return;
+  }
+
+  const score = state.chapterScores[state.currentChapter];
+  content.innerHTML=`<div class="question-card">
+    <div class="card-title" style="font-size:1.1rem;margin-bottom:10px;">${ch.icon} ${ch.title}</div>
+    <div class="card-desc" style="margin-bottom:16px;">${ch.desc}</div>
+    ${score!==undefined?`<div class="feedback-box ${score>=PASS_THRESHOLD?'correct':'wrong'}" style="margin-bottom:16px;">
+      Previous best: <strong>${score}%</strong> — ${score>=PASS_THRESHOLD?'✅ Passed! You can retake to improve.':'❌ Need 75% to pass. Keep studying!'}
+    </div>`:''}
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="startQuiz(${state.currentChapter})">
+        ${score!==undefined?'🔄 Retake Quiz':'🚀 Start Quiz'}
+      </button>
+      <button class="btn btn-secondary" onclick="openLesson(${state.currentChapter});switchView('learn')">📖 Review Lesson First</button>
+    </div>
+    <div style="margin-top:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:var(--text3);margin-bottom:10px;">OTHER CHAPTERS:</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        ${CHAPTERS.filter(c=>state.unlockedChapters.includes(c.id)).map(c=>
+          `<button class="btn btn-secondary" style="padding:6px 12px;font-size:0.75rem;" onclick="state.currentChapter=${c.id};renderQuizSelector()">
+            ${c.icon} Ch.${c.id+1}
+          </button>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function startQuiz(chapterId) {
+  const ch = CHAPTERS[chapterId];
+  const shuffled = [...ch.quiz].sort(()=>Math.random()-0.5);
+  state.quizState = {
+    chapterId,
+    questions: shuffled,
+    current: 0,
+    answers: [],
+    answered: false
+  };
+  document.getElementById('quizTitle').textContent=`Chapter ${chapterId+1} Quiz`;
+  document.getElementById('quizMeta').textContent=`Question 1 of ${shuffled.length}`;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const qs = state.quizState;
+  const q = qs.questions[qs.current];
+  const total = qs.questions.length;
+  document.getElementById('quizProgressFill').style.width=((qs.current/total)*100)+'%';
+  document.getElementById('quizMeta').textContent=`Question ${qs.current+1} of ${total}`;
+
+  const letters=['A','B','C','D'];
+  document.getElementById('quizContent').innerHTML=`
+  <div class="question-card">
+    <div class="question-num">QUESTION ${qs.current+1} OF ${total}</div>
+    <div class="question-text">${q.q}</div>
+    <div class="options" id="optionsDiv">
+      ${q.opts.map((opt,i)=>`
+        <div class="option" id="opt${i}" onclick="selectOption(${i})">
+          <div class="option-letter">${letters[i]}</div>
+          <div>${opt}</div>
+        </div>`).join('')}
+    </div>
+    <div id="feedbackDiv"></div>
+  </div>
+  <div class="quiz-nav">
+    <button class="btn btn-secondary" onclick="renderQuizSelector()" id="exitBtn">Exit</button>
+    <button class="btn btn-primary" onclick="nextQuestion()" id="nextBtn" disabled>Next →</button>
+  </div>`;
+  qs.answered=false;
+}
+
+function selectOption(idx) {
+  const qs = state.quizState;
+  if(qs.answered) return;
+  qs.answered=true;
+  const q = qs.questions[qs.current];
+  const correct = q.ans===idx;
+  qs.answers.push({correct, chosen:idx});
+
+  document.querySelectorAll('.option').forEach((el,i)=>{
+    el.classList.add('disabled');
+    if(i===q.ans) el.classList.add('correct');
+    if(i===idx && !correct) el.classList.add('wrong');
+  });
+
+  const fb = document.getElementById('feedbackDiv');
+  if(correct){
+    state.xp += XP_PER_QUESTION;
+    fb.innerHTML=`<div class="feedback-box correct">✅ <strong>Correct!</strong> ${q.exp}</div>`;
+  } else {
+    fb.innerHTML=`<div class="feedback-box wrong">❌ <strong>Not quite.</strong> The correct answer is <strong>${['A','B','C','D'][q.ans]}</strong>. ${q.exp}</div>`;
+  }
+  document.getElementById('nextBtn').disabled=false;
+  saveState();
+  renderSidebar();
+}
+
+function nextQuestion() {
+  const qs = state.quizState;
+  qs.current++;
+  if(qs.current>=qs.questions.length){
+    showResults();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showResults() {
+  const qs = state.quizState;
+  const correct = qs.answers.filter(a=>a.correct).length;
+  const total = qs.questions.length;
+  const score = Math.round(correct/total*100);
+  const passed = score>=PASS_THRESHOLD;
+  const ch = CHAPTERS[qs.chapterId];
+
+  // Save score (keep best)
+  const prev = state.chapterScores[qs.chapterId]||0;
+  if(score>prev) {
+    state.chapterScores[qs.chapterId]=score;
+    if(passed && qs.chapterId+1<CHAPTERS.length && !state.unlockedChapters.includes(qs.chapterId+1)){
+      state.unlockedChapters.push(qs.chapterId+1);
+      showToast(`🎉 Chapter ${qs.chapterId+2} unlocked!`,'success');
+    }
+  }
+
+  saveState();
+  renderSidebar();
+
+  document.getElementById('quizProgressFill').style.width='100%';
+  document.getElementById('quizMeta').textContent=`Complete!`;
+
+  document.getElementById('quizContent').innerHTML=`
+  <div class="results-card">
+    <div class="results-score ${passed?'pass':'fail'}">${score}%</div>
+    <div class="results-label">${correct} of ${total} correct</div>
+    <div class="results-msg ${passed?'pass':'fail'}">
+      ${passed
+        ? `🎉 <strong>Excellent! You passed Chapter ${qs.chapterId+1}!</strong><br>You demonstrated solid understanding of ${ch.title}.${qs.chapterId+1<CHAPTERS.length?' Chapter '+(qs.chapterId+2)+' is now unlocked!':' You\'ve completed all chapters! 🏆'}`
+        : `📚 <strong>Not quite yet — you need 75% to advance.</strong><br>You scored ${score}%. Review the lesson material and try again. Focus especially on the questions you missed. You've got this!`
+      }
+    </div>
+    <div class="results-actions">
+      <button class="btn btn-secondary" onclick="startQuiz(${qs.chapterId})">🔄 Retake Quiz</button>
+      <button class="btn btn-secondary" onclick="openLesson(${qs.chapterId});switchView('learn')">📖 Review Lesson</button>
+      ${passed && qs.chapterId+1<CHAPTERS.length
+        ? `<button class="btn btn-primary" onclick="state.currentChapter=${qs.chapterId+1};switchView('quiz')">Next Chapter →</button>`
+        : `<button class="btn btn-primary" onclick="sendDirect('I just scored ${score}% on the ${ch.title} quiz. Help me understand what I may have struggled with.')">💬 Ask Study Bot</button>`}
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// SCHEDULE
+// ============================================================
+function renderSchedule() {
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const weeks = [
+    {label:'Week 1 — Foundations',tasks:[
+      {day:0,type:'study',text:'Ch.1: Intro to DS'},
+      {day:1,type:'study',text:'Ch.1: Big-O Practice'},
+      {day:2,type:'quiz',text:'Ch.1 Quiz (75%+)'},
+      {day:3,type:'study',text:'Ch.2: Arrays'},
+      {day:4,type:'study',text:'Ch.2: 2D Arrays'},
+      {day:5,type:'quiz',text:'Ch.2 Quiz (75%+)'},
+      {day:6,type:'review',text:'Week 1 Review'}
+    ]},
+    {label:'Week 2 — Linear Structures',tasks:[
+      {day:0,type:'study',text:'Ch.3: Linked Lists'},
+      {day:1,type:'study',text:'Ch.3: LL Problems'},
+      {day:2,type:'quiz',text:'Ch.3 Quiz (75%+)'},
+      {day:3,type:'study',text:'Ch.4: Stacks'},
+      {day:4,type:'study',text:'Ch.5: Queues'},
+      {day:5,type:'quiz',text:'Ch.4+5 Quizzes'},
+      {day:6,type:'review',text:'Midpoint Review'}
+    ]},
+    {label:'Week 3 — Non-Linear Structures',tasks:[
+      {day:0,type:'study',text:'Ch.6: Binary Trees'},
+      {day:1,type:'study',text:'Ch.6: BST & Traversals'},
+      {day:2,type:'quiz',text:'Ch.6 Quiz (75%+)'},
+      {day:3,type:'study',text:'Ch.7: Hash Tables'},
+      {day:4,type:'study',text:'Ch.7: Collision Strategy'},
+      {day:5,type:'quiz',text:'Ch.7 Quiz (75%+)'},
+      {day:6,type:'review',text:'Week 3 Review'}
+    ]},
+    {label:'Week 4 — Algorithms & Mastery',tasks:[
+      {day:0,type:'study',text:'Ch.8: Sorting Algs'},
+      {day:1,type:'study',text:'Ch.8: Sort Complexity'},
+      {day:2,type:'quiz',text:'Ch.8 Quiz (75%+)'},
+      {day:3,type:'study',text:'Ch.9: Graphs BFS/DFS'},
+      {day:4,type:'quiz',text:'Ch.9 Quiz (75%+)'},
+      {day:5,type:'review',text:'Full Curriculum Review'},
+      {day:6,type:'review',text:'🏆 Final Practice Exam'}
+    ]}
+  ];
+
+  const tips = [
+    {icon:'⏰',title:'Spaced Repetition',text:'Study a topic, wait a day, review it again. This dramatically improves long-term retention.'},
+    {icon:'✍️',title:'Write It Out',text:'When learning an algorithm, write the code by hand. This forces deep understanding.'},
+    {icon:'🧩',title:'Teach It Back',text:'Explain concepts to Study Bot as if YOU are the teacher. If you can teach it, you know it.'},
+    {icon:'🐛',title:'Code & Debug',text:'Implement each data structure in C++ yourself. Debugging teaches you more than reading.'},
+    {icon:'📊',title:'Visualize',text:'Draw data structure diagrams on paper. Seeing a linked list drawn helps you understand pointer manipulation.'},
+    {icon:'🎯',title:'75% is the Floor',text:'Aim for 90%+. 75% means you can advance, but mastery means revisiting until it feels automatic.'}
+  ];
+
+  const container = document.getElementById('scheduleContainer');
+  container.innerHTML = weeks.map((week,wi)=>{
+    const grid = days.map((day,di)=>{
+      const task = week.tasks.find(t=>t.day===di);
+      const key = `w${wi}d${di}`;
+      const done = state.scheduleDone[key];
+      return `<div class="day-col">
+        <div class="day-label">${day}</div>
+        ${task?`<div class="day-task task-${task.type} ${done?'task-done':''}" onclick="toggleTask('${key}')" title="Click to toggle">${task.text}</div>`:'<div style="height:30px"></div>'}
+      </div>`;
+    }).join('');
+    return `<div style="margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;color:var(--accent);margin-bottom:8px;">${week.label}</div>
+      <div class="schedule-grid">${grid}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('studyTips').innerHTML = tips.map(t=>
+    `<div class="tip-card"><div class="tip-icon">${t.icon}</div><div class="tip-title">${t.title}</div><div class="tip-text">${t.text}</div></div>`
+  ).join('');
+}
+
+function toggleTask(key) {
+  state.scheduleDone[key] = !state.scheduleDone[key];
+  saveState();
+  renderSchedule();
+}
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function showToast(msg, type='info') {
+  const t = document.getElementById('toast');
+  t.textContent=msg; t.className='show '+type;
+  setTimeout(()=>{t.classList.remove('show');},3000);
+}
+
+function confirmReset() {
+  if(confirm('Reset ALL progress? This cannot be undone.')) {
+    localStorage.removeItem('studybot_v3');
+    state={xp:0,currentChapter:0,chapterScores:{},unlockedChapters:[0],chatHistory:[],currentView:'chat',quizState:null,scheduleDone:{}};
+    renderSidebar();
+    switchView('chat');
+    document.getElementById('chatMessages').innerHTML='';
+    init();
+    showToast('Progress reset.','info');
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  renderSidebar();
+  renderLearnGrid();
+
+  // Welcome message
+  const msgs = document.getElementById('chatMessages');
+  if(msgs.children.length===0) {
+    addBotMsg(`<h3>👋 Welcome to Study Bot — Data Structures!</h3>
+<p>I'm your dedicated AI tutor, here to help you master Data Structures from the ground up. You've already completed C++ I & II — that's the perfect foundation.</p>
+<p>Here's how this platform works:</p>
+<ul>
+  <li>📚 <strong>Learn Tab</strong> — Full written lessons for each topic</li>
+  <li>🧠 <strong>Quiz Tab</strong> — 8-question chapter quiz (75% to advance)</li>
+  <li>📅 <strong>Schedule Tab</strong> — Your 4-week study plan</li>
+  <li>💬 <strong>This chat</strong> — Ask me ANYTHING anytime!</li>
+</ul>
+<p>Chapters unlock sequentially as you pass each quiz. Start with Chapter 1 and work your way through!</p>
+<p><strong>What would you like to work on today?</strong></p>
+<div class="quick-chips">
+  <span class="chip" onclick="sendDirect('Start teaching me Chapter 1: Introduction to Data Structures')">🚀 Start Chapter 1</span>
+  <span class="chip" onclick="sendDirect('What is Big-O notation and why does it matter?')">📈 What is Big-O?</span>
+  <span class="chip" onclick="sendDirect('Give me a study plan for someone who just finished C++ 1 and 2')">📅 Study Plan</span>
+  <span class="chip" onclick="switchView('quiz')">🧠 Take a Quiz</span>
+</div>`);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
